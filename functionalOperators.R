@@ -75,10 +75,8 @@ cur(.f, n_args) %when% {
 curInternal <- \(f, i, c) \(...) {
     arg <- list2(...)
 
-    if (arg[[1]] %isa% Delayed)
-        f <- partial(f, !!!arg[[1]])
-    else
-        f <- partial(f, !!!arg)
+    # Do not evaluate the quoted argument
+    f <- if (arg[[1]] %isa% Delayed) partial(f, !!!arg[[1]]) else partial(f, !!!arg)
     # Execute if all
     if (i >= c)
         f()
