@@ -2,10 +2,40 @@ library(lambda.r)
 
 
 # MARK: Base operators
+# Operators reference:
+# R operators precedence: https://stat.ethz.ch/R-manual/R-devel/library/base/html/Syntax.html
+# Haskell operators precedence: https://rosettacode.org/wiki/Operator_precedence#Haskell
+# Haskell . and $ operators: http://ics.p.lodz.pl/~stolarek/blog/2012/03/function-composition-and-dollar-operator-in-haskell/#footnote_1_161
+# Haskell dollar sign operator: https://typeclasses.com/featured/dollar
+
 #' Haskell's . dot operator for function composition.
 #' (b -> c) -> (a -> b) -> (a -> c)
 f %.% g %::% Function : Function : Function
 f %.% g %:=% \(...) f(g(...))
+
+#' Haskell's function application operator (empty space), e.g. f x.
+#' High precedence (higher than %any%), left associativeness.
+#' (a -> b) -> a -> b
+":" <- \(f, x) {
+    if (deparse(substitute(f)) %in% c("^", "%%", "*", "/", "+", "-", "<", ">", "<=", ">=", "==", "!=", "&", "&&", "|", "||"))
+        return(\(rhs) f(x, rhs))
+
+    # IF (eval == true) => f(x)
+    # ELSE IF (eval == error) => FALSE => (cur f) x
+    testSimple <- tryCatch(
+        !is.null(capture.output(eval(f(x)))),
+        error = \(e) FALSE
+    )
+    if (testSimple)
+        f(x)
+    else
+        cur(f)(x)
+}
+
+#' Haskell's $ operator for function application.
+#' Low precedence (lower than %any% and ^), right-associativity.
+#' (a -> b) -> a -> b
+"<<-" <- \(f, x) f : x
 
 
 # MARK: Base functions
@@ -30,35 +60,20 @@ cur(.f, n_args = NULL) %:=% {
     fx(.f, list(), 1, c)
 }
 
+#' Strives to make up for the lost n:m notation.
+#' Creates a sequence from n to m.
+s(from,to) %::% numeric : numeric : numeric
+s(from,to) %:=% { cur(seq, 2) : from : to } 
+
 
 # MARK: Utility functions
 not(val) %::% logical : logical
 not(val) %:=% !val
-eq(lhs, rhs) %::% a : a : logical
-eq(lhs, rhs) %:=% { lhs == rhs }
-
-mod(lhs, rhs) %::% numeric : numeric : numeric
-mod(lhs, rhs) %:=% { lhs %% rhs }
-
-add(x, y) %::% numeric:numeric:numeric
-add(x, y) %:=% { x + y }
-
-minus(x, y) %::% numeric:numeric:numeric
-minus(x, y) %:=% { x - y }
-
-mult(x, y) %::% numeric:numeric:numeric
-mult(x, y) %:=% { x * y }
-
-divide(x, y) %::% numeric:numeric:numeric
-divide(x, 0) %:=% { stop("Not divisible by 0") }
-divide(x, y) %:=% {
-    x / y
-}
 
 last(vect) %::% . : .
 last(vect) %when% {
     length(vect) > 0
 } %:=% { vect[length(vect)] }
 
-# contains(vect, cond) %::% vector : Function : logical
+contains(vect, cond) %::% . : Function : logical
 contains(vect, cond) %:=% { not <<- is.null <<- Find(cond, vect) }
