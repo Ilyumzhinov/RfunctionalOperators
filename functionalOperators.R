@@ -1,4 +1,6 @@
 library(lambda.r)
+library(rlang)
+library(purrr)
 
 
 # MARK: Base operators
@@ -16,14 +18,14 @@ f %.% g %:=% \(...) f(g(...))
 #' Haskell's function application operator (empty space), e.g. f x.
 #' High precedence (higher than %any%), left associativeness.
 #' (a -> b) -> a -> b
-":" <- \(f, x) {
+":" <- \(f, ...) {
     if (deparse(substitute(f)) %in% c("^", "%%", "*", "/", "+", "-", "<", ">", "<=", ">=", "==", "!=", "&", "&&", "|", "||"))
-        return(\(rhs) f(x, rhs))
+        return(\(rhs) f(..., rhs))
 
     # IF (eval == true) => f(x)
     # ELSE IF (eval == error) => FALSE => (cur f) x
     testSimple <- tryCatch(
-        !is.null(capture.output(eval(do.call(f, x)))),
+        !is.null(capture.output(eval(do.call(f, ...)))),
         error = \(e) {
             if (grepl("No valid function for", e[1], fixed = TRUE))
                 stop(e)
@@ -31,9 +33,9 @@ f %.% g %:=% \(...) f(g(...))
         }
     )
     if (testSimple)
-        do.call(f, x)
+        do.call(f, ...)
     else
-        cur(f)(x)
+        cur(f)(...)
 }
 
 #' Haskell's $ operator for function application.
@@ -43,7 +45,11 @@ f %.% g %:=% \(...) f(g(...))
 
 
 # MARK: Base functions
-#' Naive currying that splits the function arg list into n_arg lambdas.
+Delayed(lst) %:=% lst
+#' New base function for delayed function arguments.
+q <- \(...) Delayed(enexprs(...))
+
+#' Naive currying that wraps around partial() and allows ellipsis argument passing.
 #' Kind of like the shortcut syntax: \f.\x.\y.M = \fxy.M
 #' Logic: cur(\(f,x,y) f(x,y)) => \(f) \(x) \(y) (\(f,x,y) f(x,y))(f)(x)(y)
 #' @examples cur(\(f,x,y) f(x,y)) => \(f) \(x) \(y) f(x,y)
@@ -52,35 +58,32 @@ cur(.f) %when% {
     .f %isa% lambdar.fun
 } %:=% {
     args <- vector(mode = "list", length = length(last(attributes(.f)$variants)[[1]]$fill.tokens)) |> setNames(last(attributes(.f)$variants)[[1]]$fill.tokens)
-    invisible(fx(.f, list(), 1, length(args)))
+    invisible(curInternal(.f, 1, length(args)))
 }
 cur(.f) %:=% {
     args <- formals(.f)
     c <- if(!is.na(Position(\(arg) deparse(arg) != "", args))) Position(\(arg) deparse(arg) != "", args) - 1
         else length(args)
-    invisible(fx(.f, list(), 1, c))
+    invisible(curInternal(.f, 1, c))
 }
 cur(.f, n_args) %::% Function : numeric : Function
 cur(.f, n_args) %when% {
     n_args > 0
-} %:=% {
-    args <- formals(.f)
-    invisible(fx(.f, list(), 1, n_args))
+} %:=% { 
+    invisible(curInternal(.f, 1, n_args))
 }
-print_lambda(dict, i) %:=% {
-    lbls <- if (i>1 && length(names(dict))>1) names(dict)[-seq(1, i-1)] else names(dict)
-    cat("lambda:", paste0(Reduce(\(accum, arg) paste0(accum, paste0("λ", arg, ".")), lbls, init = ""), paste0(lbls, collapse = " "), "\n"))
-}
-fx <- \(f, dict, i, c) {
-    print_lambda(dict, i)
-    \(...) {
-        dict <- append(dict, list(...))
-        # Execute if all
-        if (i >= c)
-            do.call(f, dict)
-        else
-            fx(f, dict, i + 1, c)
-    }
+curInternal <- \(f, i, c) \(...) {
+    arg <- list2(...)
+
+    if (arg[[1]] %isa% Delayed)
+        f <- partial(f, !!!arg[[1]])
+    else
+        f <- partial(f, !!!arg)
+    # Execute if all
+    if (i >= c)
+        f()
+    else
+        invisible(curInternal(f, i + 1, c))
 }
 
 #' Strives to make up for the lost n:m notation.

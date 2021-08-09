@@ -36,51 +36,28 @@ divisible2(divisors, n) %:=% { contains : divisors : ((`==` : 0) %.% (`%%` : n))
 divisible : c(14,17) : 66
 divisible2 : c(14,17) : 66
 
-cur(divisible)(c(14,17))(66)
-Map : plus3 : c(2,4,6)
-
-#' New base function for quoting multiple arguments
-q <- \(...) exprs(...)
-
+# NOTE: Main test
 data <- tibble(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"))
+my <- list(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"), exprs(abc, 123))
+
 t <- \(a, ...) a + select(data, ...)
+
 cur(t)(10)(q(temp)) # elipsis arg
 cur(Position,2)(\(el) el > 0)(seq(-1,2)) # test cur n_args
-cur(summary,1)(data)
+cur(summary,1) : data
 cur(\(x,y,z) (x+y)*z)(2)(3)(4)
 (\(x,y,z) (x+y)*z) : 2 : 3 : 4
 
-my <- list(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"), exprs(abc, 123))
+curInternal(t, 1, 2)(10)(q(temp, months))
 
-t(10, temp)
-t : q(temp, months) : 10
+cur(sum)(1,2,3)
+cur(sum)(q(1,2,3))
 
-s : 1 : 5
+cur(selects)(data) : q(temp, months)
 
-fx <- \(f, dict, i, c) {
-    # print_lambda(dict, i)
-    \(...) {
-        dict <- append(dict, ...)
-        cat(c, i, "\n")
-        print(dict)
-        # Execute if all
-        if (i >= c) {
-            if ("..." %in% names(dict) && length(dict) > 1) {
-                i_elip <- Position(\(arg) arg == "...", names(dict))
+selects : data : q(months)
 
-                print("CALL")
-                print(call(f, dict))
-                do.call(f, dict)
-            }
-            else do.call(f, dict)
-        }
-        else invisible(fx(f, dict, i + 1, c))
-    }
-}
 
-aaargs <- list(b = 20, q(temp))
-
-do.call(t, c(20, !!q(temp, lets)), quote = TRUE)
 
 # MARK: Testing operator precedence
 # Check the difference in evaluation when different operators used
