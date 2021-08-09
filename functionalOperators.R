@@ -1,5 +1,6 @@
+# Types and pattern matching
 library(lambda.r)
-library(rlang)
+# partial() used for the implementation of cur()
 library(purrr)
 
 
@@ -20,20 +21,7 @@ f %.% g %:=% \(...) f(g(...))
 #' (a -> b) -> a -> b
 ":" <- \(f, ...) {
     if (deparse(substitute(f)) %in% c("^", "%%", "*", "/", "+", "-", "<", ">", "<=", ">=", "==", "!=", "&", "&&", "|", "||"))
-        return(\(rhs) f(..., rhs))
-
-    # IF (eval == true) => f(x)
-    # ELSE IF (eval == error) => FALSE => (cur f) x
-    testSimple <- tryCatch(
-        !is.null(capture.output(eval(do.call(f, ...)))),
-        error = \(e) {
-            if (grepl("No valid function for", e[1], fixed = TRUE))
-                stop(e)
-            else FALSE
-        }
-    )
-    if (testSimple)
-        do.call(f, ...)
+        \(rhs) f(..., rhs)
     else
         cur(f)(...)
 }
@@ -47,7 +35,7 @@ f %.% g %:=% \(...) f(g(...))
 # MARK: Base functions
 Delayed(lst) %:=% lst
 #' New base function for delayed function arguments.
-q <- \(...) Delayed(enexprs(...))
+q <- \(...) Delayed(as.list(substitute(...())))
 
 #' Naive currying that wraps around partial() and allows ellipsis argument passing.
 #' Kind of like the shortcut syntax: \f.\x.\y.M = \fxy.M
@@ -62,8 +50,10 @@ cur(.f) %when% {
 }
 cur(.f) %:=% {
     args <- formals(.f)
-    c <- if(!is.na(Position(\(arg) deparse(arg) != "", args))) Position(\(arg) deparse(arg) != "", args) - 1
-        else length(args)
+    c <- if(!is.na(Position(\(arg) deparse(arg) != "", args)))
+            Position(\(arg) deparse(arg) != "", args) - 1
+        else
+            length(args)
     invisible(curInternal(.f, 1, c))
 }
 cur(.f, n_args) %::% Function : numeric : Function
@@ -72,16 +62,18 @@ cur(.f, n_args) %when% {
 } %:=% { 
     invisible(curInternal(.f, 1, n_args))
 }
-curInternal <- \(f, i, c) \(...) {
-    arg <- list2(...)
-
-    # Do not evaluate the quoted argument
-    f <- if (arg[[1]] %isa% Delayed) partial(f, !!!arg[[1]]) else partial(f, !!!arg)
-    # Execute if all
-    if (i >= c)
-        f()
-    else
-        invisible(curInternal(f, i + 1, c))
+curInternal(.f, i, c) %::% Function : numeric : numeric : Function
+curInternal(.f, i, c) %:=% { \(x) {
+        # Do not evaluate the quoted argument
+        f <- if(x %isa% Delayed) 
+                partial(.f, !!!x)
+            else partial(.f, x)
+        # Execute if all
+        if (i >= c)
+            f()
+        else
+            invisible(curInternal(f, i + 1, c))
+    }
 }
 
 #' Strives to make up for the lost n:m notation.

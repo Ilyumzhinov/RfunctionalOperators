@@ -2,11 +2,11 @@
 # https://github.com/zatonovo/lambda.r/blob/master/NAMESPACE,
 # https://rdrr.io/cran/lambda.r/man/lambda.r-package.html
 # https://nevrome.medium.com/haskell-in-r-an-experiment-with-the-r-package-lambda-r-78f21c0f9fe6
-source("functional/baseFP.R")
+source("functionalOperators.R")
 
 
 # MARK: Haskell: Lambda Expressions
-# Reference: www.cs.bham.ac.uk/~vxs/teaching/Haskell/handouts/lambda.pdf
+# Reference: https://www.cs.bham.ac.uk/~vxs/teaching/Haskell/handouts/lambda.pdf
 # Currying
 plus3 <- `+` : 3
 Map : plus3 : c(2,4,6)
@@ -36,28 +36,6 @@ divisible2(divisors, n) %:=% { contains : divisors : ((`==` : 0) %.% (`%%` : n))
 divisible : c(14,17) : 66
 divisible2 : c(14,17) : 66
 
-# NOTE: Main test
-data <- tibble(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"))
-my <- list(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"), exprs(abc, 123))
-
-t <- \(a, ...) a + select(data, ...)
-
-cur(t)(10)(q(temp)) # elipsis arg
-cur(Position,2)(\(el) el > 0)(seq(-1,2)) # test cur n_args
-cur(summary,1) : data
-cur(\(x,y,z) (x+y)*z)(2)(3)(4)
-(\(x,y,z) (x+y)*z) : 2 : 3 : 4
-
-curInternal(t, 1, 2)(10)(q(temp, months))
-
-cur(sum)(1,2,3)
-cur(sum)(q(1,2,3))
-
-cur(selects)(data) : q(temp, months)
-
-selects : data : q(months)
-
-
 
 # MARK: Testing operator precedence
 # Check the difference in evaluation when different operators used
@@ -80,9 +58,32 @@ length <<- words <<- "a b c"
 # Reference: http://ics.p.lodz.pl/~stolarek/blog/2012/03/function-composition-and-dollar-operator-in-haskell/#footnote_1_161
 even(x) %:=% { x %% 2 == 0 }
 reversed(x) %:=% { cur(sort, 2) : x : TRUE }
-take(n, x) %:=% { cur(head, 2) : x : n }
+take(n, x) %:=% { head : x : n }
 
-take : 3 %.% reversed %.% cur(Filter, 2) : even <<- s(1,10) # 10 8 6
+take : 3 %.% reversed %.% Filter : even <<- s(1,10) # 10 8 6
+
+
+# MARK: Ellipsis test
+library(dplyr)
+data <- tibble(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"))
+my <- list(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"), exprs(abc, 123))
+
+cur(\(x,y,z) (x+y)*z)(2)(3)(4)
+(\(x,y,z) (x+y)*z) : 2 : 3 : 4
+
+t <- \(a, b, ...) 10 + select(data, ...)
+cur(t)(q(temp, months)) # elipsis arg
+
+(t : 10 : 100) : q(temp, months)
+
+(\(x) partial(partial(select, data), !!!x)() ) : q(temp, months)
+
+sum : c(1,2,3)
+cur(mean, 1) : c(1,2,3)
+
+cur(select)(data)(q(temp, months))
+
+select : data : q(temp, months)
 
 
 # MARK: Combinator
