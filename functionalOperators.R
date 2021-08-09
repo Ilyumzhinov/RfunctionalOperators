@@ -23,11 +23,15 @@ f %.% g %:=% \(...) f(g(...))
     # IF (eval == true) => f(x)
     # ELSE IF (eval == error) => FALSE => (cur f) x
     testSimple <- tryCatch(
-        !is.null(capture.output(eval(f(x)))),
-        error = \(e) FALSE
+        !is.null(capture.output(eval(do.call(f, x)))),
+        error = \(e) {
+            if (grepl("No valid function for", e[1], fixed = TRUE))
+                stop(e)
+            else FALSE
+        }
     )
     if (testSimple)
-        f(x)
+        do.call(f, x)
     else
         cur(f)(x)
 }
@@ -53,9 +57,11 @@ cur(.f, n_args = NULL) %:=% {
         else
             fx(f, dict, i + 1, c)
     }
-    c <- if (.f %isa% lambdar.fun) length(last(attributes(.f)$variants)[[1]]$fill.tokens)
-        else if (is.null(n_args)) length(formals(.f))
-        else n_args
+    c <- if (!is.null(n_args)) n_args
+        else if (.f %isa% lambdar.fun) length(last(attributes(.f)$variants)[[1]]$fill.tokens)
+        else
+            if(!is.na(Position(\(arg) deparse(arg) != "", formals(.f)))) Position(\(arg) deparse(arg) != "", formals(.f)) - 1
+            else length(formals(.f))
 
     fx(.f, list(), 1, c)
 }
