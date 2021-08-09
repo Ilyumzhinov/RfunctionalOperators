@@ -47,9 +47,33 @@ f %.% g %:=% \(...) f(g(...))
 #' Kind of like the shortcut syntax: \f.\x.\y.M = \fxy.M
 #' Logic: cur(\(f,x,y) f(x,y)) => \(f) \(x) \(y) (\(f,x,y) f(x,y))(f)(x)(y)
 #' @examples cur(\(f,x,y) f(x,y)) => \(f) \(x) \(y) f(x,y)
-cur(.f, n_args) %::% Function : . : Function
-cur(.f, n_args = NULL) %:=% {
-    fx <- \(f, dict, i, c) \(...) {
+cur(.f) %::% Function : Function
+cur(.f) %when% {
+    .f %isa% lambdar.fun
+} %:=% {
+    args <- vector(mode = "list", length = length(last(attributes(.f)$variants)[[1]]$fill.tokens)) |> setNames(last(attributes(.f)$variants)[[1]]$fill.tokens)
+    invisible(fx(.f, list(), 1, length(args)))
+}
+cur(.f) %:=% {
+    args <- formals(.f)
+    c <- if(!is.na(Position(\(arg) deparse(arg) != "", args))) Position(\(arg) deparse(arg) != "", args) - 1
+        else length(args)
+    invisible(fx(.f, list(), 1, c))
+}
+cur(.f, n_args) %::% Function : numeric : Function
+cur(.f, n_args) %when% {
+    n_args > 0
+} %:=% {
+    args <- formals(.f)
+    invisible(fx(.f, list(), 1, n_args))
+}
+print_lambda(dict, i) %:=% {
+    lbls <- if (i>1 && length(names(dict))>1) names(dict)[-seq(1, i-1)] else names(dict)
+    cat("lambda:", paste0(Reduce(\(accum, arg) paste0(accum, paste0("λ", arg, ".")), lbls, init = ""), paste0(lbls, collapse = " "), "\n"))
+}
+fx <- \(f, dict, i, c) {
+    print_lambda(dict, i)
+    \(...) {
         dict <- append(dict, list(...))
         # Execute if all
         if (i >= c)
@@ -57,13 +81,6 @@ cur(.f, n_args = NULL) %:=% {
         else
             fx(f, dict, i + 1, c)
     }
-    c <- if (!is.null(n_args)) n_args
-        else if (.f %isa% lambdar.fun) length(last(attributes(.f)$variants)[[1]]$fill.tokens)
-        else
-            if(!is.na(Position(\(arg) deparse(arg) != "", formals(.f)))) Position(\(arg) deparse(arg) != "", formals(.f)) - 1
-            else length(formals(.f))
-
-    fx(.f, list(), 1, c)
 }
 
 #' Strives to make up for the lost n:m notation.

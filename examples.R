@@ -43,30 +43,34 @@ Map : plus3 : c(2,4,6)
 q <- \(...) exprs(...)
 
 data <- tibble(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"))
-t <- \(a,...) a+select(data, ...)
+t <- \(a, ...) a + select(data, ...)
 cur(t)(10)(q(temp)) # elipsis arg
 cur(Position,2)(\(el) el > 0)(seq(-1,2)) # test cur n_args
-cur(summary)(data)
+cur(summary,1)(data)
 cur(\(x,y,z) (x+y)*z)(2)(3)(4)
 (\(x,y,z) (x+y)*z) : 2 : 3 : 4
 
 my <- list(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"), exprs(abc, 123))
 
-t(temp, a = 10)
-t : 10 : q(temp, months)
+t(10, temp)
+t : q(temp, months) : 10
+
+s : 1 : 5
 
 fx <- \(f, dict, i, c) {
-    print_lambda(dict, i)
+    # print_lambda(dict, i)
     \(...) {
-        dict[[i]] <- list(...)[[1]]
+        dict <- append(dict, ...)
         cat(c, i, "\n")
         print(dict)
         # Execute if all
         if (i >= c) {
-            if (("..." %in% names(dict)) && (length(dict) > 1)) {
+            if ("..." %in% names(dict) && length(dict) > 1) {
                 i_elip <- Position(\(arg) arg == "...", names(dict))
 
-                f(dict[-i_elip], !!!dict[[i_elip]])
+                print("CALL")
+                print(call(f, dict))
+                do.call(f, dict)
             }
             else do.call(f, dict)
         }
@@ -74,26 +78,9 @@ fx <- \(f, dict, i, c) {
     }
 }
 
-cur(.f) %when% {
-    .f %isa% lambdar.fun
-} %:=% {
-    args <- vector(mode = "list", length = length(last(attributes(.f)$variants)[[1]]$fill.tokens)) |> setNames(last(attributes(.f)$variants)[[1]]$fill.tokens)
+aaargs <- list(b = 20, q(temp))
 
-    invisible(fx(.f, args, 1, length(args)))
-}
-cur(.f, n_args = NULL) %:=% {
-    args <- formals(.f)
-    c <- if (!is.null(n_args)) n_args
-        else
-            if(!is.na(Position(\(arg) deparse(arg) != "", args))) Position(\(arg) deparse(arg) != "", args) - 1
-            else length(args)
-
-    invisible(fx(.f, args[seq(1,c)], 1, c))
-}
-print_lambda <- \(dict, i) {
-    lbls <- if (i>1) names(dict)[-seq(1, i-1)] else names(dict)
-    cat("lambda:", paste0(Reduce(\(accum, arg) paste0(accum, paste0("λ", arg, ".")), lbls, init = ""), paste0(lbls, collapse = " "), "\n"))
-}
+do.call(t, c(20, !!q(temp, lets)), quote = TRUE)
 
 # MARK: Testing operator precedence
 # Check the difference in evaluation when different operators used
