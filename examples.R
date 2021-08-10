@@ -28,13 +28,27 @@ cur(\(f, x, y) f(x, y)) : `+` : 3 : 4
 # or2
 \(x) x |> (`*` : 4)() |> (`+` : 6)() |> (\(x) `/` : x : 3)()
 
-# 
+# Usage cont.
 divisible(divisors, n) %::% numeric : numeric : logical
-divisible(divisors, n) %:=% { contains : divisors : (\(d) n %% d == 0) }
+divisible(divisors, n) %:=% { contains : divisors : (\(d) (n %% d) == 0) }
 divisible2(divisors, n) %::% numeric : numeric : logical
 divisible2(divisors, n) %:=% { contains : divisors : ((`==` : 0) %.% (`%%` : n)) }
 divisible : c(14,17) : 66
 divisible2 : c(14,17) : 66
+
+# Usage cont.2
+head1(lst) %:=% { lst[[1]] }
+Map : cur(\(x,y) (x * x) + (y * y)) : c(2,3,4)
+(head1 <<- Map : cur(\(x,y) (x * x) + (y * y)) : c(2,3,4)) : 5
+
+# More Higher Order
+(\(f,g,x,y) g : (f : x : x) : (f : y : y)) : (\(x,y) x*y) : (\(x,y) x+y) : 2 : 5
+(\(f,g,x,y) g : (f : x : x) : (f : y : y)) : (\(x,y) x+y) : (\(x,y) x*y) : 2 : 5
+
+g(x) %:=% { x * x }
+h(y) %:=% { g : (g : y) }
+j <- h %.% h
+j : 2
 
 
 # MARK: Testing operator precedence

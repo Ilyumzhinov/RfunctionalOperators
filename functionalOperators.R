@@ -20,7 +20,7 @@ f %.% g %:=% \(...) f(g(...))
 #' High precedence (higher than %any%), left associativeness.
 #' (a -> b) -> a -> b
 ":" <- \(f, x) {
-    if (deparse(substitute(f)) %in% c("^", "%%", "*", "/", "+", "-", "<", ">", "<=", ">=", "==", "!=", "&", "&&", "|", "||"))
+    if (deparse(substitute(f))[[1]] %in% c("^", "%%", "*", "/", "+", "-", "<", ">", "<=", ">=", "==", "!=", "&", "&&", "|", "||"))
         \(rhs) f(x, rhs)
     else {
         if (f %isa% Curry) f(x)
