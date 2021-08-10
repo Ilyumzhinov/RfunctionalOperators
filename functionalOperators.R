@@ -19,11 +19,13 @@ f %.% g %:=% \(...) f(g(...))
 #' Haskell's function application operator (empty space), e.g. f x.
 #' High precedence (higher than %any%), left associativeness.
 #' (a -> b) -> a -> b
-":" <- \(f, ...) {
+":" <- \(f, x) {
     if (deparse(substitute(f)) %in% c("^", "%%", "*", "/", "+", "-", "<", ">", "<=", ">=", "==", "!=", "&", "&&", "|", "||"))
-        \(rhs) f(..., rhs)
-    else
-        cur(f)(...)
+        \(rhs) f(x, rhs)
+    else {
+        if (f %isa% Curry) f(x)
+        else cur(f)(x)
+    }
 }
 
 #' Haskell's $ operator for function application.
@@ -59,21 +61,22 @@ cur(.f) %:=% {
 cur(.f, n_args) %::% Function : numeric : Function
 cur(.f, n_args) %when% {
     n_args > 0
-} %:=% { 
+} %:=% {
     invisible(curInternal(.f, 1, n_args))
 }
+Curry(f) %::% Function : Function
+Curry(f) %:=% f
+
 curInternal(.f, i, c) %::% Function : numeric : numeric : Function
-curInternal(.f, i, c) %:=% { \(x) {
+curInternal(.f, i, c) %:=% { Curry(\(x) {
         # Do not evaluate the quoted argument
-        f <- if(x %isa% Delayed) 
+        f <- if(x %isa% Delayed)
                 partial(.f, !!!x)
             else partial(.f, x)
         # Execute if all
-        if (i >= c)
-            f()
-        else
-            invisible(curInternal(f, i + 1, c))
-    }
+        if (i >= c) f()
+        else invisible(curInternal(f, i + 1, c))
+    })
 }
 
 #' Strives to make up for the lost n:m notation.
