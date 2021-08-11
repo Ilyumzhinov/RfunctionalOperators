@@ -1,6 +1,12 @@
 # R Functional Operators
 Haskell-style operators in R for functional programming.
 
+Created solely for experimental purposes such that it aims to explore the possibilities of R in allowing powerful functional programming syntax. Furthermore, it relies on other experimental functional programming features provided by  `lambda.R`.
+
+‼️ In no way, shape or form is it suited for production code as it replaces existing **built-in operators** and has not been tested for stability or performance.
+
+
+
 #### Status
 
 **[X]** – Not implemented.
@@ -9,7 +15,7 @@ Haskell-style operators in R for functional programming.
 
 **[*]** – Priority.
 
-**[✅]** – Implementation ready.
+**[✅]** – Implemented.
 
 
 
@@ -25,7 +31,7 @@ Haskell-style operators in R for functional programming.
 
 
 
-#### [✅] Operators precedence
+### [✅] Operators precedence
 
 | Operator                      | R functional operators | Haskell |
 | ----------------------------- | ---------------------- | ------- |
@@ -35,7 +41,7 @@ Haskell-style operators in R for functional programming.
 
 
 
-#### [✅] Curry function
+### [✅] Curry function
 
 To use existing multi-argument functions along with the new operators, use  `cur()`  function that splits an *n* arguments function into *n* functions with *1* argument allowing partial evaluation.
 
@@ -68,7 +74,7 @@ cur(lm, 2) : (y ~ x) : data.frame(y = rnorm(10), x = seq(11,20)) # produces lm o
 
  
 
-#### [✅] Ellipsis argument
+### [✅] Ellipsis argument
 
 The R's  `...`  function argument can be passed via the provided  `q()`  function that delays evaluation until the actual function is invoked.
 
@@ -82,7 +88,7 @@ mutate : data : q(colA + 1, newCol = colB / 2)
 
 
 
-#### [X] Empty argument
+### [X] Empty argument
 
 Control the position of arguments required by the resulting function.
 
