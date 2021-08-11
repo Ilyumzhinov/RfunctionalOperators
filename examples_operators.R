@@ -1,8 +1,10 @@
+# NOTE: Examples showcasing functional operators and Haskell code-style
+
 # lambda.r reference:
 # https://github.com/zatonovo/lambda.r/blob/master/NAMESPACE,
 # https://rdrr.io/cran/lambda.r/man/lambda.r-package.html
-# https://nevrome.medium.com/haskell-in-r-an-experiment-with-the-r-package-lambda-r-78f21c0f9fe6
-source("functionalOperators.R")
+source('functionalOperators.R')
+source('utilities.R')
 
 
 # MARK: Haskell: Lambda Expressions
@@ -74,35 +76,12 @@ even(x) %:=% { x %% 2 == 0 }
 reversed(x) %:=% { cur(sort, 2) : x : TRUE }
 take(n, x) %:=% { head : x : n }
 
-take : 3 %.% reversed %.% Filter : even <<- s(1,10) # 10 8 6
+take : 3 %.% reversed %.% Filter : even <<- seq(1,10) # 10 8 6
 
 
-# MARK: Ellipsis test
+# MARK: Ellipsis argument test
 library(dplyr)
 data <- tibble(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"))
-my <- list(months = seq(1,3), temp = c(40,53,60), lets = c("jan", "feb", "mar"), exprs(abc, 123))
-
-cur(\(x,y,z) (x+y)*z)(2)(3)(4)
-(\(x,y,z) (x+y)*z) : 2 : 3 : 4
-
-t <- \(a, b, ...) 10 + select(data, ...)
-cur(t)(q(temp, months)) # elipsis arg
-
-(t : 10 : 100) : q(temp, months)
-
-(\(x) partial(partial(select, data), !!!x)() ) : q(temp, months)
-
-sum : c(1,2,3)
-cur(mean, 1) : c(1,2,3)
 
 cur(select)(data)(q(temp, months))
-
 select : data : q(temp, months)
-
-
-# MARK: Combinator
-Y(R) %:=% { R : (Y : R) }
-fact <- \(f) \(n) if (n == 1) 1 else n * f(n - 1)
-Y : fact : 5
-fib <- \(f) \(n) if (n == 0) 0 else if (n <= 1) 1 else f(n - 1) + f(n - 2)
-Y : fib : 14

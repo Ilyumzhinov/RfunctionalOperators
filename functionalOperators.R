@@ -19,7 +19,7 @@ f %.% g %:=% \(...) f(g(...))
 #' Haskell's function application operator (empty space), e.g. f x.
 #' High precedence (higher than %any%), left associativeness.
 #' (a -> b) -> a -> b
-":" <- \(f, x) {
+':' <- \(f, x) {
     if (deparse(substitute(f))[[1]] %in% c("^", "%%", "*", "/", "+", "-", "<", ">", "<=", ">=", "==", "!=", "&", "&&", "|", "||"))
         \(rhs) f(x, rhs)
     else {
@@ -31,7 +31,7 @@ f %.% g %:=% \(...) f(g(...))
 #' Haskell's $ operator for function application.
 #' Low precedence (lower than %any% and ^), right-associativity.
 #' (a -> b) -> a -> b
-"<<-" <- \(f, x) f : x
+'<<-' <- \(f, x) f : x
 
 
 # MARK: Base functions
@@ -69,30 +69,11 @@ Curry(f) %:=% f
 
 curInternal(.f, i, c) %::% Function : numeric : numeric : Function
 curInternal(.f, i, c) %:=% { Curry(\(x) {
-        # Do not evaluate the quoted argument
-        f <- if(x %isa% Delayed)
-                partial(.f, !!!x)
-            else partial(.f, x)
-        # Execute if all
-        if (i >= c) f()
-        else invisible(curInternal(f, i + 1, c))
-    })
-}
-
-#' Strives to make up for the lost n:m notation.
-#' Creates a sequence from n to m.
-s(from,to) %::% numeric : numeric : numeric
-s(from,to) %:=% { cur(seq, 2) : from : to } 
-
-
-# MARK: Utility functions
-not(val) %::% logical : logical
-not(val) %:=% !val
-
-last(vect) %::% . : .
-last(vect) %when% {
-    length(vect) > 0
-} %:=% { vect[length(vect)] }
-
-contains(vect, cond) %::% . : Function : logical
-contains(vect, cond) %:=% { not <<- is.null <<- Find(cond, vect) }
+    # Do not evaluate the quoted argument
+    f <- if(x %isa% Delayed)
+            partial(.f, !!!x)
+        else partial(.f, x)
+    # Execute if all
+    if (i >= c) f()
+    else invisible(curInternal(f, i + 1, c))
+})}
