@@ -47,7 +47,7 @@ cur(.f) %::% Function : Function
 cur(.f) %when% {
     .f %isa% lambdar.fun
 } %:=% {
-    args <- vector(mode = "list", length = length(last(attributes(.f)$variants)[[1]]$fill.tokens)) |> setNames(last(attributes(.f)$variants)[[1]]$fill.tokens)
+    args <- vector(mode = "list", length = length(attributes(.f)$variants[[1]]$fill.tokens) |> setNames(length(attributes(.f)$variants[[1]]$fill.tokens)))
     invisible(curInternal(.f, 1, length(args)))
 }
 cur(.f) %:=% {
@@ -58,12 +58,15 @@ cur(.f) %:=% {
             length(args)
     invisible(curInternal(.f, 1, c))
 }
-cur(.f, n_args) %::% Function : numeric : Function
-cur(.f, n_args) %when% {
+
+#' Same as cur() but forces application after a set number of arguments.
+curn(.f, n_args) %::% Function : numeric : Function
+curn(.f, n_args) %when% {
     n_args > 0
 } %:=% {
     invisible(curInternal(.f, 1, n_args))
 }
+
 Curry(f) %::% Function : Function
 Curry(f) %:=% f
 

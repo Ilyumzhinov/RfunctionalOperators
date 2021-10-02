@@ -2,9 +2,9 @@
 # Reference: https://nevrome.medium.com/haskell-in-r-an-experiment-with-the-r-package-lambda-r-78f21c0f9fe6
 source('funcOperators.R')
 source('funcUtilities.R')
-# reduce()
-library(purrr)
 
+
+# MARK: Main
 FruitSet("LAS") %:=% "LAS"
 FruitSet("SAS") %:=% "SAS"
 FruitSet("OFS") %:=% "OFS"
@@ -22,10 +22,10 @@ fsMerge("SAS", "LAS", FALSE    ) %:=% FruitSet("LAS")
 fsMergeList(xs, intersect) %::% Array : logical : FruitSet
 fsMergeList(xs, intersect) %when% {
     xs@Element %isa% FruitSet
-} %:=% { cur(reduce, 2) : xs : (\(a, b) fsMerge : a : b : intersect) }
+} %:=% { reduce1 : (\(a, b) fsMerge : a : b : intersect) : xs }
 
-fsMergeList : Array(FruitSet("LAS")) : TRUE
-fsMergeList : Array(FruitSet("LAS"), FruitSet("LAS")) : TRUE
-fsMergeList : Array(FruitSet("LAS"), FruitSet("LAS"), FruitSet("SAS")) : TRUE
-fsMergeList : Array(FruitSet("LAS"), FruitSet("LAS"), FruitSet("SAS")) : FALSE
-fsMergeList : Array(FruitSet("LAS"), FruitSet("LAS"), FruitSet("OFS")) : FALSE
+fsMergeList : Array(FruitSet : "LAS") : TRUE # LAS
+fsMergeList : Array(FruitSet : "LAS", FruitSet : "LAS") : TRUE # LAS
+fsMergeList : Array(FruitSet : "LAS", FruitSet : "LAS", FruitSet : "SAS") : TRUE # SAS
+fsMergeList : Array(FruitSet : "LAS", FruitSet : "LAS", FruitSet : "SAS") : FALSE # LAS
+fsMergeList : Array(FruitSet : "LAS", FruitSet : "LAS", FruitSet : "OFS") : FALSE # OFS
