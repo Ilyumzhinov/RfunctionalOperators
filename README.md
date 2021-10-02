@@ -57,7 +57,7 @@ fun(min, 4, 3) # 3
 funCurried <- cur(fun) # \(f) \(x) \(y) f(x,y)
 funCurried(min) # \(x) \(y) min(x,y)
 funCurried(min)(4)(3) # 3
-funCurried : min : 4 : 3
+funCurried : min : 4 : 3 # 3
 ```
 
 Functional operators curry functions implicitly, however things like default and ellipsis arguments make function definitions messy. Therefore, a manual limit on the number of arguments for evaluation can be provided.

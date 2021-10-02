@@ -1,10 +1,9 @@
 # NOTE: Examples showcasing functional operators and Haskell code-style
-
 # lambda.r reference:
 # https://github.com/zatonovo/lambda.r/blob/master/NAMESPACE,
 # https://rdrr.io/cran/lambda.r/man/lambda.r-package.html
-source('functionalOperators.R')
-source('utilities.R')
+source('funcOperators.R')
+source('funcUtilities.R')
 
 
 # MARK: Haskell: Lambda Expressions

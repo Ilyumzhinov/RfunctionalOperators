@@ -1,8 +1,7 @@
 # NOTE: Haskell in R rewritten using functional operators
 # Reference: https://nevrome.medium.com/haskell-in-r-an-experiment-with-the-r-package-lambda-r-78f21c0f9fe6
-
-source('functionalOperators.R')
-source('utilities.R')
+source('funcOperators.R')
+source('funcUtilities.R')
 # reduce()
 library(purrr)
 

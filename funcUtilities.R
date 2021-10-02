@@ -1,6 +1,7 @@
-# NOTE: Utility functions
+# NOTE: Functional utility functions
 # Small functions that take advantage of the functional approach
 # and that are used throughout examples
+library(lambda.r)
 
 #' Same as !val
 not(val) %::% logical : logical
@@ -14,11 +15,11 @@ last(vect) %when% {
 
 #' Checks if a vector contains an element where a condition function returns true.
 contains(vect, cond) %::% . : Function : logical
-contains(vect, cond) %:=% { not <<- is.null <<- Find(cond, vect) }
+contains(vect, cond) %:=% { !is.null(Find(cond, vect)) }
 
 #' Checks if all elements in a list are EXACTLY the same type
 allEqual(lst) %::% list : logical
-allEqual(lst) %:=% { not <<- contains : lst : (\(el) not <<- setequal : (class : el) : (class : lst[[1]])) }
+allEqual(lst) %:=% { !contains(lst, \(el) !setequal(class(el), class(lst[[1]]))) }
 
 #' A wrapper around list that (1) requires a non-empty list with (2) elements of the same type and (3) adds attribute for element type called Element.
 Array(...) %::% ... : Array
