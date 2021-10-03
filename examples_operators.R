@@ -15,19 +15,19 @@ Map : (`+` : 3) : c(2,4,6) # 5,7,9
 
 # λ notation
 # With manual currying
-(\(f) \(x) \(y) f(x, y)) : `+` : 3 : 4 # 7
+(\(f) \(x) \(y) f(x)(y)) : `+` : 3 : 4 # 7
 # With explicit currying
-cur(\(f, x, y) f(x, y)) : `+` : 3 : 4 # 7
+cur(\(f, x, y) f(x)(y)) : `+` : 3 : 4 # 7
 # With implicit currying
-(\(f, x, y) f(x, y)) : `+` : 3 : 4 # 7
+(\(f, x, y) f(x)(y)) : `+` : 3 : 4 # 7
 
 # Usage
 \(x) (4 * x + 6) / 3
-(\(x) `/` : x : 3) %.% (`+` : 6) %.% (`*` : 4)
+(`/` : . : 3) %.% (`+` : 6) %.% (`*` : 4)
 # or1
 \(x) `/` : (`+` : (`*` : x : 4) : 6) : 3
 # or2
-\(x) x |> (`*` : 4)() |> (`+` : 6)() |> (\(x) `/` : x : 3)()
+\(x) x |> (`*` : 4)() |> (`+` : 6)() |> (`/` : . : 3)()
 
 # Usage cont.
 divisible(divisors, n) %::% numeric : numeric : logical
@@ -43,13 +43,14 @@ Map : cur(\(x,y) (x * x) + (y * y)) : c(2,3,4) # [\y (2*2) + (y*y), \y (3*3) + (
 (head1 <<- Map : cur(\(x,y) (x * x) + (y * y)) : c(2,3,4)) : 5 # 29
 
 # More Higher Order
-(\(f,g,x,y) g : (f : x : x) : (f : y : y)) : (\(x,y) x*y) : (\(x,y) x+y) : 2 : 5 # 29
-(\(f,g,x,y) g : (f : x : x) : (f : y : y)) : (\(x,y) x+y) : (\(x,y) x*y) : 2 : 5 # 40
+(\(f,g,x,y) g : (f : x : x) : (f : y : y)) : `*` : `+` : 2 : 5 # 29
+(\(f,g,x,y) g : (f : x : x) : (f : y : y)) : `+` : `*` : 2 : 5 # 40
 
 g(x) %:=% { x * x }
 h(y) %:=% { g : (g : y) }
 j <- h %.% h
 j : 2 # 2^16 = 65536
+
 
 # MARK: Testing operator precedence
 # Check the difference in evaluation when different operators used

@@ -13,12 +13,27 @@ library(purrr)
 #' High precedence (higher than %any%), left-associativity.
 #' @type (a -> b) -> a -> b
 ':' <- \(f, x) {
-    if (deparse(substitute(f))[[1]] %in% c("^", "%%", "*", "/", "+", "-", "<", ">", "<=", ">=", "==", "!=", "&", "&&", "|", "||"))
-        \(rhs) f(x, rhs)
-    else {
-        if ("Curry" %in% class(f)) f(x)
-        else cur(f)(x)
+    # Process a special case when f is a binary operator
+    if (deparse(substitute(f))[[1]] %in% c("^", "%%", "*", "/", "+", "-", "<", ">", "<=", ">=", "==", "!=", "&", "&&", "|", "||")) {
+        # Process a special case when f is a binary operator and x is a placeholder (.)
+        if(substitute(x) == ".")
+            return(\(b) \(a) f(a, b))
+        else return(\(b) f(x, b))
     }
+
+    # Process a special case when x is a placeholder (.) by flipping the arguments
+    if(substitute(x) == ".")
+        return(\(b) \(a) cur(f)(a)(b))
+
+    # Process a special case when x is a binary operator
+    if (deparse(substitute(x))[[1]] %in% c("^", "%%", "*", "/", "+", "-", "<", ">", "<=", ">=", "==", "!=", "&", "&&", "|", "||"))
+        return(
+            if ("Curry" %in% class(f)) f(\(a) \(b) x(a,b))
+            else cur(f)(\(a) \(b) x(a,b))
+        )
+
+    if ("Curry" %in% class(f)) f(x)
+    else cur(f)(x)
 }
 
 #' Haskell's dollar ($) operator for function application.
@@ -45,6 +60,7 @@ q <- \(...) Delayed(as.list(substitute(...())))
 #' Logic: cur(\(f,x,y) f(x,y)) => \(f) \(x) \(y) (\(f,x,y) f(x,y))(f)(x)(y)
 #' @examples cur(\(f,x,y) f(x,y)) => \(f) \(x) \(y) f(x,y)
 cur <- \(.f) {
+    # Process a special case when .f is a lambda.R function
     if ("lambdar.fun" %in% class(.f))
         return(curLambdaR(.f))
 

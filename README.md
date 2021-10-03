@@ -53,13 +53,16 @@ The function is based on  `purrr::partial()` but handles differently: (1) infix 
 
 ```R
 # Without cur()
-fun <- \(f,x,y) f(x,y)
-fun(min) # Error, x and y missing
-fun(min, 4, 3) # 3
+funNoCur <- \(f,x,y) f(x,y)
+funNoCur(min) # Error, x and y missing
+funNoCur(min, 4, 3) # 3
 
 # With cur()
 funCur <- cur(fun) # \(f) \(x) \(y) f(x,y)
+
 funCur(min) # \(x) \(y) min(x,y)
+furCur : min # \(x) \(y) min(x,y)
+
 funCur(min)(4)(3) # 3
 funCur : min : 4 : 3 # 3
 ```
@@ -68,12 +71,12 @@ Functional operators curry functions implicitly, however things like default and
 
 ```R
 # Implicit currying with functional operators just works
-fun : min : 4 : 3 # 3
+funNoCur : min : 4 : 3 # 3
 
 # However, functions that have a bazillion arguments do not curry well
-# and need explicit cur()
-lm : (y ~ x) : data.frame(y = rnorm(10), x = seq(11,20)) # returns a function that expects 3 more arguments
-curn(lm, 2) : (y ~ x) : data.frame(y = rnorm(10), x = seq(11,20)) # produces lm object
+# and need explicit curn()
+lm : (y ~ x) : data # returns a function that expects 3 more arguments
+curn(lm, 2) : (y ~ x) : data # produces lm object
 ```
 
  
@@ -92,13 +95,13 @@ mutate : data : q(colA + 1, newCol = colB / 2)
 
 
 
-### [X] Empty argument
+### [✅] Empty argument
 
 Control the position of arguments required by the resulting function.
 
 ```R
 `/` : 10 # \(x) 10/x
-`/` : {} : 10 # \(x) x/10
+`/` : . : 10 # \(x) x/10
 ```
 
 
