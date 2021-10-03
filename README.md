@@ -29,7 +29,7 @@ The library works in base R and uses S3 classes for type-checking. However, all 
 
 [✅] Ellipsis argument
 
-[X] Empty argument
+[✅] Empty argument
 
 [X] Normal-order strategy
 
