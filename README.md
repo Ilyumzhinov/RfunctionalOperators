@@ -1,9 +1,11 @@
 # R Functional Operators
 Haskell-style operators in R for functional programming.
 
-Created solely for experimental purposes such that it aims to explore the possibilities of R in allowing powerful functional programming syntax. Furthermore, it relies on other experimental functional programming features provided by  `lambda.R`.
+Created for experimental purposes such that it aims to explore the possibilities of R in allowing powerful functional programming syntax.
 
-‼️ In no way, shape or form is it suited for production code as it replaces existing **built-in operators** and has not been tested for stability or performance.
+The library works in base R and uses S3 classes for type-checking. However, all examples rely on other experimental functional programming features provided by  `lambda.R`.
+
+‼️ Disclaimer: in no way, shape or form is it suited for production code as it replaces existing **built-in operators** and has not been tested for stability or performance.
 
 
 
@@ -108,7 +110,7 @@ Normal-order reduction strategy is considered an optimal strategy for evaluation
 It is the basis of lazy evaluation in Haskell. Because R is a lazy language as well, it should be possible to implement this strategy.
 
 ```R
-# Second parameter never used
+# Second parameter is never used
 k <- \(x, y) x
 
 k : 42 : (stop : "error") # 42

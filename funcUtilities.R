@@ -3,8 +3,8 @@
 library(lambda.r)
 
 #' Checks if a vector contains an element where a condition function returns true.
-anys(vect, cond) %::% . : Function : logical
-anys(vect, cond) %:=% { !is.null(Find(cond, vect)) }
+anys(cond, vect) %::% Function : . : logical
+anys(cond, vect) %:=% { !is.null(Find(cond, vect)) }
 
 #' A wrapper around Reduce that uses the first element as initial element.
 reduce1(f, xs) %when% { length(xs) > 0 } %:=% { Reduce(f, xs) }

@@ -31,9 +31,9 @@ cur(\(f, x, y) f(x, y)) : `+` : 3 : 4 # 7
 
 # Usage cont.
 divisible(divisors, n) %::% numeric : numeric : logical
-divisible(divisors, n) %:=% { anys : divisors : (\(d) (n %% d) == 0) }
+divisible(divisors, n) %:=% { anys : (\(d) (n %% d) == 0) : divisors }
 divisible2(divisors, n) %::% numeric : numeric : logical
-divisible2(divisors, n) %:=% { anys : divisors : ((`==` : 0) %.% (`%%` : n)) }
+divisible2(divisors, n) %:=% { anys : ((`==` : 0) %.% (`%%` : n)) : divisors }
 divisible : c(14,17) : 66 # FALSE
 divisible2 : c(14,17) : 66 # FALSE
 
@@ -51,7 +51,6 @@ h(y) %:=% { g : (g : y) }
 j <- h %.% h
 j : 2 # 2^16 = 65536
 
-
 # MARK: Testing operator precedence
 # Check the difference in evaluation when different operators used
 # Reference: https://typeclasses.com/featured/dollar
@@ -63,7 +62,7 @@ sort <<- c("j", "u", "l", "i", "e") %++% c("m", "o", "r", "o", "n", "u", "k", "i
 
 # Produce the same results
 # Reference: https://nanxiao.me/en/differentiate-application-operator-and-function-composition-in-haskell/
-words(str) %:=% { strsplit(str, " ")[[1]] }
+words(str) %:=% { (strsplit : str : " ")[[1]] }
 length <<- words : "a b c" # 3
 (length %.% words) : "a b c" # 3
 length %.% words <<- "a b c" # 3
